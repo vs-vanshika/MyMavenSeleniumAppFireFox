@@ -5,6 +5,8 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.WindowType;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
 
@@ -17,8 +19,8 @@ public class App {
 
         WebDriver driver = new FirefoxDriver(options);
 
-        // Better than Thread.sleep
-        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+        // Explicit wait
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 
         try {
             // =====================
@@ -27,7 +29,9 @@ public class App {
             driver.get("https://www.saucedemo.com/");
             driver.manage().window().maximize();
 
+            wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("user-name")));
             driver.findElement(By.id("user-name")).sendKeys("standard_user");
+
             driver.findElement(By.id("password")).sendKeys("secret_sauce");
             driver.findElement(By.id("login-button")).click();
 
@@ -37,7 +41,9 @@ public class App {
             driver.switchTo().newWindow(WindowType.TAB);
             driver.get("https://practicetestautomation.com/practice-test-login/");
 
+            wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("username")));
             driver.findElement(By.id("username")).sendKeys("student");
+
             driver.findElement(By.id("password")).sendKeys("Password123");
             driver.findElement(By.id("submit")).click();
 
@@ -47,13 +53,19 @@ public class App {
             driver.switchTo().newWindow(WindowType.TAB);
             driver.get("https://automationexercise.com");
 
+            wait.until(ExpectedConditions.visibilityOfElementLocated(
+                    By.xpath("(//a[contains(text(),'Add to cart')])[1]")));
+
             driver.findElement(By.xpath("(//a[contains(text(),'Add to cart')])[1]")).click();
+
+            wait.until(ExpectedConditions.visibilityOfElementLocated(
+                    By.xpath("//button[contains(text(),'Continue Shopping')]")));
+
             driver.findElement(By.xpath("//button[contains(text(),'Continue Shopping')]")).click();
 
             System.out.println("All automations completed successfully.");
 
         } finally {
-            // Always close browser
             driver.quit();
         }
     }
