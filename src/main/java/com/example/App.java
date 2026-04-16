@@ -1,55 +1,69 @@
 package com.example;
 
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
+import org.junit.jupiter.api.Test;
+import org.openqa.selenium.*;
 import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.WindowType;
+import org.openqa.selenium.firefox.FirefoxOptions;
 
-public class App {
-    public static void main(String[] args) throws InterruptedException {
+import java.time.Duration;
 
-        // Start Firefox
-        WebDriver driver = new FirefoxDriver();
+public class AppTest {
 
-        // =====================
-        // SauceDemo login
-        // =====================
-        driver.get("https://www.saucedemo.com/");
-        driver.manage().window().maximize();
-        driver.findElement(By.id("user-name")).sendKeys("standard_user");
-        driver.findElement(By.id("password")).sendKeys("secret_sauce");
-        driver.findElement(By.id("login-button")).click();
+    @Test
+    public void testAutomationFlow() {
 
-        Thread.sleep(5000); // wait 5 sec before next site
+        // Headless setup (REQUIRED for Jenkins)
+        FirefoxOptions options = new FirefoxOptions();
+        options.addArguments("--headless");
 
-        // =====================
-        // Practice Test Automation login (new tab)
-        // =====================
-        driver.switchTo().newWindow(WindowType.TAB);
-        driver.get("https://practicetestautomation.com/practice-test-login/");
-        driver.findElement(By.id("username")).sendKeys("student");
-        driver.findElement(By.id("password")).sendKeys("Password123");
-        driver.findElement(By.id("submit")).click();
+        WebDriver driver = new FirefoxDriver(options);
 
-        Thread.sleep(5000); // wait 5 sec before next site
+        // Implicit wait (replaces Thread.sleep)
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
 
-        // =====================
-        // Automation Exercise (new tab)
-        // =====================
-        driver.switchTo().newWindow(WindowType.TAB);
-        driver.get("https://automationexercise.com");
-        Thread.sleep(4000);
+        try {
 
-        // Click first "Add to Cart" button
-        driver.findElement(By.xpath("(//a[contains(text(),'Add to cart')])[1]")).click();
-        Thread.sleep(4000);
+            // =====================
+            // SauceDemo login
+            // =====================
+            driver.get("https://www.saucedemo.com/");
+            driver.findElement(By.id("user-name")).sendKeys("standard_user");
+            driver.findElement(By.id("password")).sendKeys("secret_sauce");
+            driver.findElement(By.id("login-button")).click();
 
-        // Click Continue Shopping
-        driver.findElement(By.xpath("//button[contains(text(),'Continue Shopping')]")).click();
+            // Assertion (VERY IMPORTANT)
+            if (!driver.getCurrentUrl().contains("inventory")) {
+                throw new RuntimeException("SauceDemo login failed");
+            }
 
-        System.out.println("All automations completed successfully.");
+            // =====================
+            // Practice Test Automation login
+            // =====================
+            driver.switchTo().newWindow(WindowType.TAB);
+            driver.get("https://practicetestautomation.com/practice-test-login/");
+            driver.findElement(By.id("username")).sendKeys("student");
+            driver.findElement(By.id("password")).sendKeys("Password123");
+            driver.findElement(By.id("submit")).click();
 
-        // Close browser
-        driver.quit();
+            if (!driver.getCurrentUrl().contains("logged-in")) {
+                throw new RuntimeException("Practice site login failed");
+            }
+
+            // =====================
+            // Automation Exercise
+            // =====================
+            driver.switchTo().newWindow(WindowType.TAB);
+            driver.get("https://automationexercise.com");
+
+            driver.findElement(By.xpath("(//a[contains(text(),'Add to cart')])[1]")).click();
+
+            driver.findElement(By.xpath("//button[contains(text(),'Continue Shopping')]")).click();
+
+            System.out.println("All automations completed successfully.");
+
+        } finally {
+            // Always close browser
+            driver.quit();
+        }
     }
 }
